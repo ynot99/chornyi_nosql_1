@@ -23,7 +23,7 @@ const aggregatedDocs = db.tracks_raw.aggregate([
       popularity: 1,
       duration_ms: 1,
       track_genre: 1,
-      artists_raw: 1,
+      artists_raw: "$artists",
 
       // Формуємо audio_features заздалегідь для 4го пункту
       audio_features: {
@@ -46,15 +46,16 @@ const aggregatedDocs = db.tracks_raw.aggregate([
       },
     },
   },
-  // MYTODO limit is temporary for testing, remove it later
-  { $limit: 5 },
 ]);
 
 // 3. Перетворення артистів
 // - Розбийте рядок артистів по ; та приберіть пробіли навколо кожного імені.
 // - Збережіть результат у полі artists як масив.
 const artistsDocs = aggregatedDocs.map((doc) => {
-  const artistsArray = doc.artists.split(";").map((artist) => artist.trim());
+  const artistsArray = doc.artists_raw
+    .split(";")
+    .map((artist) => artist.trim());
+  delete doc.artists_raw;
   return { ...doc, artists: artistsArray };
 });
 
@@ -89,11 +90,15 @@ const audioFeaturesDocs = artistsDocs.map((doc) => {
 // 5. Очищення зайвих полів
 // - Приберіть вихідні аудіофічі та поле artists_raw.
 
+// Done earlier
+
 // 6. Збереження результату
 // - Збережіть перетворені документи в колекцію tracks.
 db.tracks.insertMany(audioFeaturesDocs.toArray());
 
 // 7. Перевірка результату
 // - Виведіть кількість документів у tracks.
+console.log(db.tracks.countDocuments());
 
 // - Виведіть один приклад документа для перевірки структури.
+console.log(db.tracks.findOne());
