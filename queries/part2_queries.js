@@ -37,21 +37,21 @@ const artistsWithPopularTracks = db.tracks.aggregate([
     $group: {
       _id: "$artists",
       trackCount: { $sum: 1 },
-      minPopularity: { $min: "$popularity" },
-      avgPopularity: { $avg: "$popularity" },
+      min_popularity: { $min: "$popularity" },
+      avg_popularity: { $avg: "$popularity" },
     },
   },
   {
     $match: {
       trackCount: { $gte: 3 },
-      minPopularity: { $gte: 60 },
+      min_popularity: { $gte: 60 },
     },
   },
   // Sort top artists by minPopularity and then by avgPopularity
   {
     $sort: {
-      minPopularity: -1,
-      avgPopularity: -1,
+      min_popularity: -1,
+      avg_popularity: -1,
     },
   },
   // And then the best 20 artists
@@ -63,11 +63,13 @@ const artistsWithPopularTracks = db.tracks.aggregate([
       _id: 0,
       artist: "$_id",
       trackCount: 1,
-      minPopularity: { $round: ["$minPopularity", 1] },
-      avgPopularity: { $round: ["$avgPopularity", 1] },
+      min_popularity: { $round: ["$min_popularity", 1] },
+      avg_popularity: { $round: ["$avg_popularity", 1] },
     },
   },
 ]);
+
+console.log(artistsWithPopularTracks.toArray());
 
 // Завдання 3. Нетипові треки
 
@@ -152,7 +154,11 @@ const highTempoTracks = db.tracks.aggregate([
       as: "outlier_tracks",
     },
   },
+  // Не по завданню, але потрібно, щоб не перевантажувати вивід
+  { $limit: 2 }
 ]);
+
+console.log(highTempoTracks.toArray());
 
 // Завдання 4: Треки для фонової роботи
 
