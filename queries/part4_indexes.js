@@ -24,11 +24,13 @@ db = db.getSiblingDB("spotify");
  */
 
 // Видаляємо індекс перед стартом, щоб забезпечити чистий COLLSCAN для першого тесту
+const task1Index = {
+  track_genre: 1, // E (Equality)
+  popularity: -1, // S (Sort)
+  "audio_features.danceability": 1, // R (Range)
+};
 try {
-  db.tracks.dropIndex({
-    track_genre: 1,
-    "audio_features.danceability": 1,
-  });
+  db.tracks.dropIndex(task1Index);
 } catch (e) {
   // Ігноруємо помилку, якщо індексу ще не існує
 }
@@ -50,11 +52,6 @@ const task1Query = db.tracks.find({
 
 explainQuery(task1Query);
 
-const task1Index = {
-  track_genre: 1, // E (Equality)
-  popularity: -1, // S (Sort)
-  "audio_features.danceability": 1, // R (Range)
-};
 db.tracks.createIndex(task1Index);
 
 const task1QueryWithIndex = db.tracks.find({
